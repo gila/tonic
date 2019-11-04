@@ -44,7 +44,7 @@ harness = false
 bytes = "0.4"
 futures-core-preview = "=0.3.0-alpha.19"
 futures-util-preview = { version = "=0.3.0-alpha.19", default-features = false }
-tracing = "0.1"
+tracing = { version = "0.1", features = ["log"] }
 http = "0.1.14"
 base64 = "0.10"
 

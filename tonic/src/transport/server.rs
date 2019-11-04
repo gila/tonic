@@ -33,6 +33,8 @@ use tower::{
 };
 #[cfg(feature = "tls")]
 use tracing::error;
+use std::path::Path;
+use tokio;
 
 type BoxService = tower::util::BoxService<Request<Body>, Response<BoxBody>, crate::Error>;
 type Interceptor = Arc<dyn Layer<BoxService, Service = BoxService> + Send + Sync + 'static>;
@@ -181,6 +183,45 @@ impl Server {
         Router::new(self.clone(), svc)
     }
 
+    pub(crate) async fn serve_uds<S>(self, path: &str, svc: S) -> Result<(), super::Error>
+        where
+            S: Service<Request<Body>, Response = Response<BoxBody>> + Clone + Send + 'static,
+            S::Future: Send + 'static,
+            S::Error: Into<crate::Error> + Send,
+    {
+        let interceptor = self.interceptor.clone();
+        let concurrency_limit = self.concurrency_limit;
+        let init_connection_window_size = self.init_connection_window_size;
+        let init_stream_window_size = self.init_stream_window_size;
+        let max_concurrent_streams = self.max_concurrent_streams;
+        // let timeout = self.timeout.clone();
+
+        let incoming = hyper::server::accept::from_stream(async_stream::try_stream! {
+            let mut tcp = tokio::net::UnixListener::bind(std::path::Path::new(path))?.incoming();
+            while let Some(stream) = tcp.try_next().await? {
+                yield BoxedIo::new(stream);
+            }
+        });
+
+        let svc = MakeSvc {
+            inner: svc,
+            interceptor,
+            concurrency_limit,
+            // timeout,
+        };
+
+        hyper::Server::builder(incoming)
+            .http2_only(true)
+            .http2_initial_connection_window_size(init_connection_window_size)
+            .http2_initial_stream_window_size(init_stream_window_size)
+            .http2_max_concurrent_streams(max_concurrent_streams)
+            .serve(svc)
+            .await
+            .map_err(map_err)?;
+
+        Ok(())
+    }
+
     pub(crate) async fn serve<S>(self, addr: SocketAddr, svc: S) -> Result<(), super::Error>
     where
         S: Service<Request<Body>, Response = Response<BoxBody>> + Clone + Send + 'static,
@@ -302,6 +343,9 @@ where
     /// [`Server`]: struct.Server.html
     pub async fn serve(self, addr: SocketAddr) -> Result<(), super::Error> {
         self.server.serve(addr, self.routes).await
+    }
+    pub async fn serve_uds(self, path: &str) -> Result<(), super::Error> {
+        self.server.serve_uds(path, self.routes).await
     }
 }
 
