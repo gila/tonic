@@ -21,16 +21,13 @@ $ cargo new helloworld-tonic
 $ cd helloworld-tonic
 ```
 
-`tonic` currently only works on rust `1.39-beta` and above as it requires support for the `async_await`
-feature. To install the beta simply follow the commands below:
+`tonic` works on rust `1.39` and above as it requires support for the `async_await`
+feature.
 
 ```bash
-$ rustup install beta
-$ rustup component add rustfmt --toolchain beta
-$ rustup default beta
+$ rustup update
+$ rustup component add rustfmt
 ```
-
-We recommend setting `rustup default` to `beta` as this is the version tools like RLS and rust-analyzer will use to watch your code, and could degrade your experience when developing using Tonic as they will not be able to provide support.
 
 ## Defining the HelloWorld service
 
@@ -266,7 +263,7 @@ The client is much simpler than the server as we don't need to implement any ser
 ```rust
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut client = GreeterClient::connect("http://[::1]:50051")?;
+    let mut client = GreeterClient::connect("http://[::1]:50051").await?;
 
     let request = tonic::Request::new(HelloRequest {
         name: "Tonic".into(),

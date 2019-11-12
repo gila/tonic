@@ -22,8 +22,14 @@
 //! for [`tonic-build`]. Enabled by default.
 //! - `openssl`: Enables the `openssl` based tls options for the `transport` feature`. Not
 //! enabled by default.
+//! - `openssl-roots`: Adds system trust roots to `openssl`-based gRPC clients using the
+//! `openssl-probe` crate. Not enabled by default. `openssl` must be enabled to use
+//! `openssl-roots`.
 //! - `rustls`: Enables the `ruslts` based tls options for the `transport` feature`. Not
 //! enabled by default.
+//! - `rustls-roots`: Adds system trust roots to `rustls`-based gRPC clients using the
+//! `rustls-native-certs` crate. Not enabled by default. `rustls` must be enabled to use
+//! `openssl-roots`.
 //! - `prost`: Enables the [`prost`] based gRPC [`Codec`] implementation.
 //!
 //! # Structure
@@ -71,7 +77,7 @@
 #![doc(
     html_logo_url = "https://github.com/hyperium/tonic/raw/master/.github/assets/tonic-docs.png"
 )]
-#![doc(html_root_url = "https://docs.rs/tonic/0.1.0-alpha.5")]
+#![doc(html_root_url = "https://docs.rs/tonic/0.1.0-alpha.6")]
 #![doc(issue_tracker_base_url = "https://github.com/hyperium/tonic/issues/")]
 #![doc(test(no_crate_inject, attr(deny(rust_2018_idioms))))]
 #![cfg_attr(docsrs, feature(doc_cfg))]

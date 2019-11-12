@@ -53,10 +53,6 @@ Tonic uses `rustfmt` to tidy up the code it generates, so we'll make sure it's i
 $ rustup component add rustfmt
 ```
 
-**Note** Prior to rust's 1.39 release, Tonic may be pinned to a specific toolchain version. Running
-the above command may first download and install a different toolchain. Check the project's [readme]
-for the latest requirements.
-
 Run the server
 ```shell
 $ cargo run --bin routeguide-server
@@ -299,7 +295,7 @@ impl server::RouteGuide for RouteGuide {
         unimplemented!()
     }
 
-    type RouteChatStream = Pin<Box<dyn Stream<Item = Result<RouteNote, Status>> + Send + 'static>>;
+    type RouteChatStream = Pin<Box<dyn Stream<Item = Result<RouteNote, Status>> + Send + Sync + 'static>>;
 
     async fn route_chat(
         &self,
@@ -521,7 +517,7 @@ async fn route_chat(
 
     Ok(Response::new(Box::pin(output)
         as Pin<
-            Box<dyn Stream<Item = Result<RouteNote, Status>> + Send + 'static>,
+            Box<dyn Stream<Item = Result<RouteNote, Status>> + Send + Sync + 'static>,
         >))
 
 }
@@ -658,7 +654,6 @@ Here's where we call the server-side streaming method `list_features`, which ret
 geographical `Feature`s.
 
 ```rust
-use futures::TryStreamExt;
 use tonic::transport::Channel;
 use std::error::Error;
 ```

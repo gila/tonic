@@ -53,7 +53,7 @@
 #![doc(
     html_logo_url = "https://github.com/hyperium/tonic/raw/master/.github/assets/tonic-docs.png"
 )]
-#![doc(html_root_url = "https://docs.rs/tonic-build/0.1.0-alpha.5")]
+#![doc(html_root_url = "https://docs.rs/tonic-build/0.1.0-alpha.6")]
 #![doc(issue_tracker_base_url = "https://github.com/hyperium/tonic/issues/")]
 #![doc(test(no_crate_inject, attr(deny(rust_2018_idioms))))]
 
@@ -262,6 +262,8 @@ impl prost_build::ServiceGenerator for ServiceGenerator {
 
             let code = format!("{}", client_service);
             buf.push_str(&code);
+
+            self.clients = TokenStream::default();
         }
 
         if self.builder.build_server && !self.servers.is_empty() {
@@ -279,6 +281,8 @@ impl prost_build::ServiceGenerator for ServiceGenerator {
 
             let code = format!("{}", server_service);
             buf.push_str(&code);
+
+            self.servers = TokenStream::default();
         }
     }
 }
